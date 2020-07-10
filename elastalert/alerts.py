@@ -1612,7 +1612,7 @@ class TelegramAlerter(Alerter):
         self.telegram_proxy = self.rule.get('telegram_proxy', None)
         self.telegram_proxy_login = self.rule.get('telegram_proxy_login', None)
         self.telegram_proxy_password = self.rule.get('telegram_proxy_pass', None)
-        self.telegram_use_markdown = self.rule['telegram_use_markdown']
+        self.telegram_use_markdown = self.rule.get('telegram_use_markdown', 'default')
 
     def alert(self, matches):
         if self.telegram_use_markdown == 'custom':
@@ -1634,7 +1634,7 @@ class TelegramAlerter(Alerter):
                         body = body[0:(telegram_lim_search-40)] + "\n *message was cropped according to telegram limits!* \n"
                         break
                     telegram_lim_search -= 1
-        else:
+        elif self.telegram_use_markdown == 'default':
             body = '⚠ *%s* ⚠ ```\n' % (self.create_title(matches))
             for match in matches:
                 body += str(BasicMatchString(self.rule, match))
