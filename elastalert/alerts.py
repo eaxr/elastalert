@@ -1615,8 +1615,7 @@ class TelegramAlerter(Alerter):
         self.telegram_use_markdown = self.rule['telegram_use_markdown']
 
     def alert(self, matches):
-        body = '⚠ *%s* ⚠ ```\n' % (self.create_title(matches)
-
+        body = '⚠ *%s* ⚠ ```\n' % (self.create_title(matches))
         if self.telegram_use_markdown == 'custom':
             telegram_lim_end = '----------------------------------------'
             telegram_lim_check = 4095
