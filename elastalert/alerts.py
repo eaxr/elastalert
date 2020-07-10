@@ -1612,7 +1612,7 @@ class TelegramAlerter(Alerter):
         self.telegram_proxy = self.rule.get('telegram_proxy', None)
         self.telegram_proxy_login = self.rule.get('telegram_proxy_login', None)
         self.telegram_proxy_password = self.rule.get('telegram_proxy_pass', None)
-        self.telegram_use_markdown = self.telegram_use_markdown['telegram_use_markdown']
+        self.telegram_use_markdown = self.rule['telegram_use_markdown']
 
     def alert(self, matches):
         if self.telegram_use_markdown == 'custom':
