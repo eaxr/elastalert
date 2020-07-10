@@ -1615,6 +1615,8 @@ class TelegramAlerter(Alerter):
         self.telegram_use_markdown = self.rule['telegram_use_markdown']
 
     def alert(self, matches):
+        body = '⚠ *%s* ⚠ ```\n' % (self.create_title(matches)
+
         if self.telegram_use_markdown == 'custom':
             telegram_lim_end = '----------------------------------------'
             telegram_lim_check = 4095
@@ -1634,7 +1636,7 @@ class TelegramAlerter(Alerter):
                         break
                     telegram_lim_search -= 1
         else:
-            body = '⚠ *%s* ⚠ ```\n' % (self.create_title(matches))
+            # body = '⚠ *%s* ⚠ ```\n' % (self.create_title(matches))
             for match in matches:
                 body += str(BasicMatchString(self.rule, match))
                 # Separate text of aggregated alerts with dashes
