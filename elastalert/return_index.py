@@ -39,8 +39,8 @@ def send_to_es(es_client, ea_index, option):
 
             index = ea_index + '_test'
             es_client.index(index, body=doc, id=None)
-            
-            res = es.search(index="elastalert_test", body={"query": {"match_all": {}}})
+
+            res = es_client.search(index="elastalert_test", body={"query": {"match_all": {}}})
             print("Got %d Hits:" % res['hits']['total']['value'])
             for hit in res['hits']['hits']:
                 print(hit["_source"])
