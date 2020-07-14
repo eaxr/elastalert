@@ -28,7 +28,7 @@ def send_to_es(es_client, ea_index, option):
             }
 
             index = ea_index + '_test'
-            es_client.index(index, body, id=None, params=None, headers=None)
+            es_client.index(index, body=doc, id=None, params=None, headers=None)
 
 def create_index_mappings(es_client, ea_index, recreate=False, old_ea_index=None):
     esversion = es_client.info()["version"]["number"]
