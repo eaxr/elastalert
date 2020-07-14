@@ -272,7 +272,9 @@ def main():
         ca_certs=ca_certs,
         client_key=client_key)
 
-    #create_index_mappings(es_client=es, ea_index=index, recreate=args.recreate, old_ea_index=old_index)
+    print(es)
+    print(index)
+    create_index_mappings(es_client=es, ea_index=index, recreate=args.recreate, old_ea_index=old_index)
     send_to_es(es_client=es, ea_index=index, option="elasticsearch")
 
 
