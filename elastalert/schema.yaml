@@ -348,6 +348,7 @@ properties:
   telegram_room_id: {type: string}
   telegram_api_url: {type: string}
   telegram_use_markdown: {type: string}
+  telegram_limit_option: {type: string}
 
   ### Gitter
   gitter_webhook_url: {type: string}

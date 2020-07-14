@@ -40,6 +40,8 @@ from .util import resolve_string
 from .util import ts_now
 from .util import ts_to_dt
 
+from . import return_index
+
 
 class DateTimeEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -1613,6 +1615,7 @@ class TelegramAlerter(Alerter):
         self.telegram_proxy_login = self.rule.get('telegram_proxy_login', None)
         self.telegram_proxy_password = self.rule.get('telegram_proxy_pass', None)
         self.telegram_use_markdown = self.rule.get('telegram_use_markdown', 'default')
+        self.telegram_limit_option = self.rule.get('telegram_limit_option', 'default')
 
     def alert(self, matches):
         if self.telegram_use_markdown == 'custom':
