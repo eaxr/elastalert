@@ -20,7 +20,7 @@ from .auth import Auth
 
 env = Env(ES_USE_SSL=bool)
 
-def send_to_es(es_client, ea_index, option):
+def send_to_es(ea_index, option):
         if option == 'elasticsearch':
             context = create_default_context(cafile="/etc/logstash/certs/ca/ca.crt")
             es = Elasticsearch(
@@ -38,7 +38,7 @@ def send_to_es(es_client, ea_index, option):
             }
 
             index = ea_index + '_test'
-            es_client.index(index, body=doc, id=None, params=None, headers=None)
+            es.index(index, body=doc, id=None, params=None, headers=None)
 
 
 def create_index_mappings(es_client, ea_index, recreate=False, old_ea_index=None):
@@ -286,7 +286,7 @@ def main():
     print(es)
     print(index)
     create_index_mappings(es_client=es, ea_index=index, recreate=args.recreate, old_ea_index=old_index)
-    send_to_es(es_client=es, ea_index=index, option="elasticsearch")
+    send_to_es(ea_index=index, option="elasticsearch")
 
 
 if __name__ == '__main__':
