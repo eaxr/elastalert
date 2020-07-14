@@ -33,7 +33,7 @@ def send_to_es(es_client, ea_index, option):
 
             doc = {
                 'text': 'test from ElastAlert',
-                '@timestamp': datetime.now(),
+                '@timestamp': datetime.now(timezone.utc),
             }
 
             index = ea_index + '_test'
