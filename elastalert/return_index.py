@@ -20,16 +20,16 @@ from .auth import Auth
 
 env = Env(ES_USE_SSL=bool)
 
-def send_to_es(ea_index, option):
+def send_to_es(es_client, ea_index, option):
         if option == 'elasticsearch':
-            context = create_default_context(cafile="/etc/logstash/certs/ca/ca.crt")
-            es = Elasticsearch(
-                ['kibana.taxnet.ru'],
-                http_auth=('elastic', 'IJfb39tEbQ'),
-                scheme="https",
-                port=9200,
-                ssl_context=context,
-            )
+            #context = create_default_context(cafile="/etc/logstash/certs/ca/ca.crt")
+            #es = Elasticsearch(
+            #    ['kibana.taxnet.ru'],
+            #    http_auth=('elastic', 'IJfb39tEbQ'),
+            #    scheme="https",
+            #    port=9200,
+            #    ssl_context=context,
+            #)
 
             doc = {
                 'author': 'test',
@@ -38,7 +38,12 @@ def send_to_es(ea_index, option):
             }
 
             index = ea_index + '_test'
-            es.index(index, body=doc, id=None)
+            es_client.index(index, body=doc, id=None)
+            
+            res = es.search(index="elastalert_test", body={"query": {"match_all": {}}})
+            print("Got %d Hits:" % res['hits']['total']['value'])
+            for hit in res['hits']['hits']:
+                print(hit["_source"])
 
 
 def create_index_mappings(es_client, ea_index, recreate=False, old_ea_index=None):
@@ -283,10 +288,8 @@ def main():
         ca_certs=ca_certs,
         client_key=client_key)
 
-    print(es)
-    print(index)
-    create_index_mappings(es_client=es, ea_index=index, recreate=args.recreate, old_ea_index=old_index)
-    send_to_es(ea_index=index, option="elasticsearch")
+    #create_index_mappings(es_client=es, ea_index=index, recreate=args.recreate, old_ea_index=old_index)
+    send_to_es(es_client=es, ea_index=index, option="elasticsearch")
 
 
 if __name__ == '__main__':
