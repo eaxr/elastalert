@@ -41,11 +41,6 @@ def send_to_es(es_client, ea_index, option):
             res = es_client.index(index, id=None, body=doc)
             print(res['result'])
 
-            res = es_client.search(index, body={"query": {"match_all": {}}})
-            print("Got %d Hits:" % res['hits']['total']['value'])
-            for hit in res['hits']['hits']:
-                print(hit["_source"])
-
 
 def create_index_mappings(es_client, ea_index, recreate=False, old_ea_index=None):
     esversion = es_client.info()["version"]["number"]
@@ -291,6 +286,10 @@ def main():
 
     #create_index_mappings(es_client=es, ea_index=index, recreate=args.recreate, old_ea_index=old_index)
     send_to_es(es_client=es, ea_index=index, option="elasticsearch")
+    res = es.search(index="elastalert_status_test", body={"query": {"match_all": {}}})
+    print("Got %d Hits:" % res['hits']['total']['value'])
+        for hit in res['hits']['hits']:
+            print(hit["_source"])
 
 
 if __name__ == '__main__':
