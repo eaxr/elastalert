@@ -32,16 +32,15 @@ def send_to_es(es_client, ea_index, option):
             #)
 
             doc = {
-                'author': 'test',
                 'text': 'test from ElastAlert',
                 '@timestamp': datetime.now(),
             }
 
-            #index = ea_index + '_test'
-            res = es_client.index(index="elastalert_test", id=None, body=doc)
+            index = ea_index + '_test'
+            res = es_client.index(index, id=None, body=doc)
             print(res['result'])
 
-            res = es_client.search(index="elastalert_test", body={"query": {"match_all": {}}})
+            res = es_client.search(index, body={"query": {"match_all": {}}})
             print("Got %d Hits:" % res['hits']['total']['value'])
             for hit in res['hits']['hits']:
                 print(hit["_source"])
