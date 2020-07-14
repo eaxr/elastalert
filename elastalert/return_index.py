@@ -38,7 +38,7 @@ def send_to_es(ea_index, option):
             }
 
             index = ea_index + '_test'
-            es.index(index, body=doc, id=None, params=None, headers=None)
+            es.index(index, body=doc, id=None)
 
 
 def create_index_mappings(es_client, ea_index, recreate=False, old_ea_index=None):
