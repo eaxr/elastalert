@@ -288,8 +288,8 @@ def main():
     send_to_es(es_client=es, ea_index=index, option="elasticsearch")
     res = es.search(index="elastalert_status_test", body={"query": {"match_all": {}}})
     print("Got %d Hits:" % res['hits']['total']['value'])
-        for hit in res['hits']['hits']:
-            print(hit["_source"])
+    for hit in res['hits']['hits']:
+        print(hit["_source"])
 
 
 if __name__ == '__main__':
