@@ -5,7 +5,8 @@ import getpass
 import json
 import os
 import time
-from datetime import datetime, timezone
+from datetime import datetime
+from dateutil import tz
 from ssl import create_default_context
 
 import elasticsearch.helpers
@@ -19,7 +20,6 @@ from envparse import Env
 from .auth import Auth
 
 env = Env(ES_USE_SSL=bool)
-os.environ["TZ"] = "UTC"
 
 def send_to_es(es_client, ea_index, option):
         if option == 'elasticsearch':
@@ -31,10 +31,10 @@ def send_to_es(es_client, ea_index, option):
             #    port=9200,
             #    ssl_context=context,
             #)
-
+            
             doc = {
                 'text': 'test from ElastAlert',
-                '@timestamp': datetime.now(),
+                '@timestamp': datetime.now(tz=tz.tzlocal()),
             }
 
             index = ea_index + '_test'
