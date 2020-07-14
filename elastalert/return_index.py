@@ -6,6 +6,7 @@ import json
 import os
 import time
 from datetime import datetime
+from ssl import create_default_context
 
 import elasticsearch.helpers
 import yaml
@@ -21,6 +22,15 @@ env = Env(ES_USE_SSL=bool)
 
 def send_to_es(es_client, ea_index, option):
         if option == 'elasticsearch':
+            context = create_default_context(cafile="/etc/logstash/certs/ca/ca.crt")
+            es = Elasticsearch(
+                ['kibana.taxnet.ru'],
+                http_auth=('elastic', 'IJfb39tEbQ'),
+                scheme="https",
+                port=9200,
+                ssl_context=context,
+            )
+
             doc = {
                 'author': 'test',
                 'text': 'test from ElastAlert',
@@ -28,9 +38,7 @@ def send_to_es(es_client, ea_index, option):
             }
 
             index = ea_index + '_test'
-            #es_client.index(index, body=doc, id=None, params=None, headers=None)
-            esversion = es_client.info()["version"]["number"]
-            print("TEST Elastic Version: " + esversion)
+            es_client.index(index, body=doc, id=None, params=None, headers=None)
 
 
 def create_index_mappings(es_client, ea_index, recreate=False, old_ea_index=None):
