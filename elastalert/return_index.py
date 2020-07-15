@@ -140,7 +140,7 @@ class ReturnIndex(object):
 
         return es
 
-    def __init__(self, args):
+    def __init__(self):
         self.es = self.parse_args(args)
 
     def send_to_es(self, option):
