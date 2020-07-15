@@ -1,83 +1,150 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import argparse
-import copy
-import datetime
+import getpass
 import json
-import logging
-import random
-import re
-import string
-import sys
+import os
+import time
 
-import mock
+import elasticsearch.helpers
+import yaml
+from elasticsearch import RequestsHttpConnection
+from elasticsearch.client import Elasticsearch
+from elasticsearch.client import IndicesClient
+from elasticsearch.exceptions import NotFoundError
+from envparse import Env
 
-from .config import load_conf
-from elastalert.elastalert import ElastAlerter
-from elastalert.util import EAException
-from elastalert.util import elasticsearch_client
-from elastalert.util import lookup_es_key
-from elastalert.util import ts_now
-from elastalert.util import ts_to_dt
+from .auth import Auth
+
+env = Env(ES_USE_SSL=bool)
 
 from datetime import datetime
 from dateutil import tz
-
-logging.getLogger().setLevel(logging.INFO)
-logging.getLogger('elasticsearch').setLevel(logging.WARNING)
+import sys
 
 class ReturnIndex(object):
     def parse_args(self, args):
         parser = argparse.ArgumentParser()
+        parser.add_argument('--host', default=os.environ.get('ES_HOST', None), help='Elasticsearch host')
+        parser.add_argument('--port', default=os.environ.get('ES_PORT', None), type=int, help='Elasticsearch port')
+        parser.add_argument('--username', default=os.environ.get('ES_USERNAME', None), help='Elasticsearch username')
+        parser.add_argument('--password', default=os.environ.get('ES_PASSWORD', None), help='Elasticsearch password')
+        parser.add_argument('--url-prefix', help='Elasticsearch URL prefix')
+        parser.add_argument('--no-auth', action='store_const', const=True, help='Suppress prompt for basic auth')
+        parser.add_argument('--ssl', action='store_true', default=env('ES_USE_SSL', None), help='Use TLS')
+        parser.add_argument('--no-ssl', dest='ssl', action='store_false', help='Do not use TLS')
+        parser.add_argument('--verify-certs', action='store_true', default=None, help='Verify TLS certificates')
+        parser.add_argument('--no-verify-certs', dest='verify_certs', action='store_false',
+                            help='Do not verify TLS certificates')
+        parser.add_argument('--index', help='Index name to create')
+        parser.add_argument('--alias', help='Alias name to create')
+        parser.add_argument('--old-index', help='Old index name to copy')
+        parser.add_argument('--send_get_body_as', default='GET',
+                            help='Method for querying Elasticsearch - POST, GET or source')
         parser.add_argument(
-            '--config',
-            action='store',
-            dest='config',
-            default="config.yaml",
-            help='Global config file (default: config.yaml)')
-        parser.add_argument('--debug', action='store_true', dest='debug', help='Suppresses alerts and prints information instead. '
-                                                                               'Not compatible with `--verbose`')
-        parser.add_argument('--rule', dest='rule', help='Run only a specific rule (by filename, must still be in rules folder)')
-        parser.add_argument('--silence', dest='silence', help='Silence rule for a time period. Must be used with --rule. Usage: '
-                                                              '--silence <units>=<number>, eg. --silence hours=2')
-        parser.add_argument('--start', dest='start', help='YYYY-MM-DDTHH:MM:SS Start querying from this timestamp. '
-                                                          'Use "NOW" to start from current time. (Default: present)')
-        parser.add_argument('--end', dest='end', help='YYYY-MM-DDTHH:MM:SS Query to this timestamp. (Default: present)')
-        parser.add_argument('--verbose', action='store_true', dest='verbose', help='Increase verbosity without suppressing alerts. '
-                                                                                   'Not compatible with `--debug`')
-        parser.add_argument('--patience', action='store', dest='timeout',
-                            type=parse_duration,
-                            default=datetime.timedelta(),
-                            help='Maximum time to wait for ElasticSearch to become responsive.  Usage: '
-                            '--patience <units>=<number>. e.g. --patience minutes=5')
+            '--boto-profile',
+            default=None,
+            dest='profile',
+            help='DEPRECATED: (use --profile) Boto profile to use for signing requests')
         parser.add_argument(
-            '--pin_rules',
-            action='store_true',
-            dest='pin_rules',
-            help='Stop ElastAlert from monitoring config file changes')
-        parser.add_argument('--es_debug', action='store_true', dest='es_debug', help='Enable verbose logging from Elasticsearch queries')
+            '--profile',
+            default=None,
+            help='AWS profile to use for signing requests. Optionally use the AWS_DEFAULT_PROFILE environment variable')
         parser.add_argument(
-            '--es_debug_trace',
-            action='store',
-            dest='es_debug_trace',
-            help='Enable logging from Elasticsearch queries as curl command. Queries will be logged to file. Note that '
-                 'this will incorrectly display localhost:9200 as the host/port')
-        self.args = parser.parse_args(args)
+            '--aws-region',
+            default=None,
+            help='AWS Region to use for signing requests. Optionally use the AWS_DEFAULT_REGION environment variable')
+        parser.add_argument('--timeout', default=60, type=int, help='Elasticsearch request timeout')
+        parser.add_argument('--config', default='config.yaml', help='Global config file (default: config.yaml)')
+        parser.add_argument('--recreate', type=bool, default=False,
+                            help='Force re-creation of the index (this will cause data loss).')
+        args = parser.parse_args()
+
+        if os.path.isfile(args.config):
+            filename = args.config
+        elif os.path.isfile('../config.yaml'):
+            filename = '../config.yaml'
+        else:
+            filename = ''
+
+        if filename:
+            with open(filename) as config_file:
+                data = yaml.load(config_file, Loader=yaml.FullLoader)
+            host = args.host if args.host else data.get('es_host')
+            port = args.port if args.port else data.get('es_port')
+            username = args.username if args.username else data.get('es_username')
+            password = args.password if args.password else data.get('es_password')
+            url_prefix = args.url_prefix if args.url_prefix is not None else data.get('es_url_prefix', '')
+            use_ssl = args.ssl if args.ssl is not None else data.get('use_ssl')
+            verify_certs = args.verify_certs if args.verify_certs is not None else data.get('verify_certs') is not False
+            aws_region = data.get('aws_region', None)
+            send_get_body_as = data.get('send_get_body_as', 'GET')
+            ca_certs = data.get('ca_certs')
+            client_cert = data.get('client_cert')
+            client_key = data.get('client_key')
+            index = args.index if args.index is not None else data.get('writeback_index')
+            alias = args.alias if args.alias is not None else data.get('writeback_alias')
+            old_index = args.old_index if args.old_index is not None else None
+        else:
+            username = args.username if args.username else None
+            password = args.password if args.password else None
+            aws_region = args.aws_region
+            host = args.host if args.host else input('Enter Elasticsearch host: ')
+            port = args.port if args.port else int(input('Enter Elasticsearch port: '))
+            use_ssl = (args.ssl if args.ssl is not None
+                    else input('Use SSL? t/f: ').lower() in ('t', 'true'))
+            if use_ssl:
+                verify_certs = (args.verify_certs if args.verify_certs is not None
+                                else input('Verify TLS certificates? t/f: ').lower() not in ('f', 'false'))
+            else:
+                verify_certs = True
+            if args.no_auth is None and username is None:
+                username = input('Enter optional basic-auth username (or leave blank): ')
+                password = getpass.getpass('Enter optional basic-auth password (or leave blank): ')
+            url_prefix = (args.url_prefix if args.url_prefix is not None
+                        else input('Enter optional Elasticsearch URL prefix (prepends a string to the URL of every request): '))
+            send_get_body_as = args.send_get_body_as
+            ca_certs = None
+            client_cert = None
+            client_key = None
+            index = args.index if args.index is not None else input('New index name? (Default elastalert_status) ')
+            if not index:
+                index = 'elastalert_status'
+            alias = args.alias if args.alias is not None else input('New alias name? (Default elastalert_alerts) ')
+            if not alias:
+                alias = 'elastalert_alias'
+            old_index = (args.old_index if args.old_index is not None
+                        else input('Name of existing index to copy? (Default None) '))
+
+        timeout = args.timeout
+
+        auth = Auth()
+        http_auth = auth(host=host,
+                        username=username,
+                        password=password,
+                        aws_region=aws_region,
+                        profile_name=args.profile)
+        es = Elasticsearch(
+            host=host,
+            port=port,
+            timeout=timeout,
+            use_ssl=use_ssl,
+            verify_certs=verify_certs,
+            connection_class=RequestsHttpConnection,
+            http_auth=http_auth,
+            url_prefix=url_prefix,
+            send_get_body_as=send_get_body_as,
+            client_cert=client_cert,
+            ca_certs=ca_certs,
+            client_key=client_key)
+
+        return es
 
     def __init__(self, args):
-        self.parse_args(args)
-        self.data = []
-        self.formatted_output = {}
-        self.conf = load_conf(self.args)
+        self.es = self.parse_args(args)
 
-    def send_to_es(self, option, conf, args):
-        """ Loads a rule config file, performs a query over the last day (args.days), lists available keys
-        and prints the number of results. """
-        if args.schema_only:
-            return []
-
-        # Set up Elasticsearch client and query
-        es_client = elasticsearch_client(conf)
+    def send_to_es(self, option):
+        es_client = self.es
 
         # Get one document for schema
         try:
