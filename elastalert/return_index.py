@@ -29,21 +29,21 @@ class ReturnIndex(object):
         else:
             filename = ''
 
-        if filename:
-            with open(filename) as config_file:
-                data = yaml.load(config_file, Loader=yaml.FullLoader)
-            host = data.get('es_host')
-            port = data.get('es_port')
-            username = data.get('es_username')
-            password = data.get('es_password')
-            url_prefix = data.get('es_url_prefix', '')
-            use_ssl = data.get('use_ssl') is not False
-            verify_certs = data.get('verify_certs') is not False
-            aws_region = data.get('aws_region', None)
-            send_get_body_as = data.get('send_get_body_as', 'GET')
-            ca_certs = data.get('ca_certs')
-            client_cert = data.get('client_cert')
-            client_key = data.get('client_key')
+        #if filename:
+        with open(filename) as config_file:
+            data = yaml.load(config_file, Loader=yaml.FullLoader)
+        host = data.get('es_host')
+        port = data.get('es_port')
+        username = data.get('es_username')
+        password = data.get('es_password')
+        url_prefix = data.get('es_url_prefix', '')
+        use_ssl = data.get('use_ssl') is not False
+        verify_certs = data.get('verify_certs') is not False
+        aws_region = data.get('aws_region', None)
+        send_get_body_as = data.get('send_get_body_as', 'GET')
+        ca_certs = data.get('ca_certs')
+        client_cert = data.get('client_cert')
+        client_key = data.get('client_key')
 
         timeout = 60
 
