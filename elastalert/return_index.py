@@ -73,8 +73,13 @@ class ReturnIndex(object):
     def __init__(self):
         self.es = self.parse_args()
 
-    def send_to_es(self, doc, option):
+    def send_to_es(self, body, option):
         es_client = self.es
+
+        doc = {
+                    'message': body,
+                    '@timestamp': datetime.now(tz=tz.tzlocal()),
+                }
 
         # Get one document for schema
         try:
