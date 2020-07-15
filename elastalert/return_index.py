@@ -18,8 +18,9 @@ from envparse import Env
 
 from .auth import Auth
 
+env = Env(ES_USE_SSL=bool)
+
 class ReturnIndex():
-    env = Env(ES_USE_SSL=bool)
 
     def __init__(self):
         parser = argparse.ArgumentParser()
