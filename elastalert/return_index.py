@@ -73,20 +73,15 @@ class ReturnIndex(object):
     def __init__(self):
         self.es = self.parse_args()
 
-    def send_to_es(self, option):
+    def send_to_es(self, option, body):
         es_client = self.es
 
         # Get one document for schema
         try:
             if option == 'elasticsearch':
-                doc = {
-                    'text': 'test from ElastAlert',
-                    '@timestamp': datetime.now(tz=tz.tzlocal()),
-                }
-
                 #index = self.ea_index + '_test'
                 index = 'elastalert_status_test'
-                res = es_client.index(index, id=None, body=doc)
+                res = es_client.index(index, id=None, body)
                 print(res['result'])
         except Exception as e:
             print("Error running your filter:", file=sys.stderr)

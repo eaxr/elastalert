@@ -1631,7 +1631,7 @@ class TelegramAlerter(Alerter):
                     body += '\n%s\n' % telegram_lim_end
 
             if len(body) > telegram_lim_check:
-                return_index_class.send_to_es(option="elasticsearch")
+                return_index_class.send_to_es(option="elasticsearch", body)
                 telegram_lim_search = telegram_lim_check
                 while telegram_lim_search > 0:
                     telegram_lim_40 = body[(telegram_lim_search-40):telegram_lim_search]
@@ -1647,7 +1647,7 @@ class TelegramAlerter(Alerter):
                 if len(matches) > 1:
                     body += '\n----------------------------------------\n'
             if len(body) > 4095:
-                return_index_class.send_to_es(option="elasticsearch")
+                return_index_class.send_to_es(option="elasticsearch", body)
                 body = body[0:4000] + "\n⚠ *message was cropped according to telegram limits!* ⚠"
             body += ' ```'
 
