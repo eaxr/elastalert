@@ -23,7 +23,7 @@ from dateutil import tz
 import sys
 
 class ReturnIndex(object):
-    def parse_args(self, args):
+    def parse_args(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--host', default=os.environ.get('ES_HOST', None), help='Elasticsearch host')
         parser.add_argument('--port', default=os.environ.get('ES_PORT', None), type=int, help='Elasticsearch port')
@@ -141,7 +141,7 @@ class ReturnIndex(object):
         return es
 
     def __init__(self):
-        self.es = self.parse_args(args)
+        self.es = self.parse_args()
 
     def send_to_es(self, option):
         es_client = self.es
