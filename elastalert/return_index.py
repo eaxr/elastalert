@@ -21,7 +21,7 @@ from .auth import Auth
 class ReturnIndex():
     env = Env(ES_USE_SSL=bool)
 
-    def __init__(self, option):
+    def __init__(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--host', default=os.environ.get('ES_HOST', None), help='Elasticsearch host')
         parser.add_argument('--port', default=os.environ.get('ES_PORT', None), type=int, help='Elasticsearch port')
