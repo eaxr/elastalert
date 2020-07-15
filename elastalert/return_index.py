@@ -12,7 +12,7 @@ import sys
 
 import mock
 
-from elastalert.config import load_conf
+from .config import load_conf
 from elastalert.elastalert import ElastAlerter
 from elastalert.util import EAException
 from elastalert.util import elasticsearch_client
