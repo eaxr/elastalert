@@ -29,7 +29,7 @@ class ReturnIndex(object):
         #else:
         #    filename = ''
 
-        filename = '../config.yaml'
+        filename = 'config.yaml'
         if filename:
             with open(filename) as config_file:
                 data = yaml.load(config_file, Loader=yaml.FullLoader)
