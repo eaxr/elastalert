@@ -1616,7 +1616,7 @@ class TelegramAlerter(Alerter):
         self.telegram_proxy_password = self.rule.get('telegram_proxy_pass', None)
         self.telegram_use_markdown = self.rule.get('telegram_use_markdown', 'default')
         self.telegram_limit_option = self.rule.get('telegram_limit_option', 'default')
-        self.filename = args.config
+        self.filename = self.args.config
 
     def alert(self, matches):
         return_index_class = return_index.ReturnIndex()
