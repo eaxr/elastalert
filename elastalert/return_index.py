@@ -71,12 +71,10 @@ class ReturnIndex(object):
 
         return es
 
-    def __init__(self):
+    #def __init__(self):
         #self.es = self.parse_args()
 
     def send_to_es(self, body, conf, option):
-        #es_client = self.es
-
         if os.path.isfile(conf):
             filename = conf
         elif os.path.isfile('../config.yaml'):
@@ -85,6 +83,7 @@ class ReturnIndex(object):
             filename = ''
 
         es_client = elasticsearch_client(filename)
+        #es_client = self.es
 
         doc = {
                     'message': body,
