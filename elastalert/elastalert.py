@@ -2035,7 +2035,6 @@ class ElastAlerter(object):
             return timestamp + rule['exponential_realert'], exponent - 1
         return timestamp + wait, exponent
 
-
 def handle_signal(signal, frame):
     elastalert_logger.info('SIGINT received, stopping ElastAlert...')
     # use os._exit to exit immediately and avoid someone catching SystemExit

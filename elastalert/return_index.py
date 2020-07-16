@@ -30,7 +30,7 @@ from elastalert.util import lookup_es_key
 from elastalert.util import ts_now
 from elastalert.util import ts_to_dt
 
-class ReturnIndex(ElastAlerter):
+class ReturnIndex(object):
     def parse_args(self):
         #if os.path.isfile('../config.yaml'):
         #    filename = '../config.yaml'
@@ -78,11 +78,9 @@ class ReturnIndex(ElastAlerter):
 
         return es
 
-    def __init__(self, *args):
+    def __init__(self):
         #self.es = self.parse_args()
-        super(ReturnIndex, self).__init__(self, *args)
-        elastalert = ElastAlerter(args)
-        self.es = elastalert.es_clients
+        self.conf = os.getenv('ELASTALERT_CONFIG', 'config.yaml')
 
     def send_to_es(self, body, option):
         #if os.path.isfile(self.conf):
@@ -93,7 +91,9 @@ class ReturnIndex(ElastAlerter):
         #    filename = ''
 
         #es_client = elasticsearch_client(filename)
-        es_client = self.es
+        es_client = elasticsearch_client(self.conf)
+
+        #es_client = self.es
 
         doc = {
                     'message': body,
