@@ -22,13 +22,7 @@ from datetime import datetime
 from dateutil import tz
 import sys
 from .util import elasticsearch_client
-
-from elastalert.elastalert import ElastAlerter
-from elastalert.util import EAException
-from elastalert.util import elasticsearch_client
-from elastalert.util import lookup_es_key
-from elastalert.util import ts_now
-from elastalert.util import ts_to_dt
+#from elastalert.util import elasticsearch_client
 
 class ReturnIndex(object):
     def parse_args(self):
