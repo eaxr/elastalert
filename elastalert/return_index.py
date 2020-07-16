@@ -26,36 +26,35 @@ from elastalert.util import elasticsearch_client
 
 class ReturnIndex(object):
     def parse_args(self):
-        #if os.path.isfile('../config.yaml'):
-        #    filename = '../config.yaml'
-        #else:
-        #    filename = ''
+        filename = os.getenv('ELASTALERT_CONFIG', 'config.yaml')
 
-        filename = 'config.yaml'
         if filename:
             with open(filename) as config_file:
                 data = yaml.load(config_file, Loader=yaml.FullLoader)
-            host = data.get('es_host')
-            port = data.get('es_port')
-            username = data.get('es_username')
-            password = data.get('es_password')
-            url_prefix = data.get('es_url_prefix', '')
-            use_ssl = data.get('use_ssl') is not False
-            verify_certs = data.get('verify_certs') is not False
+            host = args.host if args.host else data.get('es_host')
+            port = args.port if args.port else data.get('es_port')
+            username = args.username if args.username else data.get('es_username')
+            password = args.password if args.password else data.get('es_password')
+            url_prefix = args.url_prefix if args.url_prefix is not None else data.get('es_url_prefix', '')
+            use_ssl = args.ssl if args.ssl is not None else data.get('use_ssl')
+            verify_certs = args.verify_certs if args.verify_certs is not None else data.get('verify_certs') is not False
             aws_region = data.get('aws_region', None)
             send_get_body_as = data.get('send_get_body_as', 'GET')
             ca_certs = data.get('ca_certs')
             client_cert = data.get('client_cert')
             client_key = data.get('client_key')
+            index = args.index if args.index is not None else data.get('writeback_index')
+            alias = args.alias if args.alias is not None else data.get('writeback_alias')
+            old_index = args.old_index if args.old_index is not None else None
 
-        timeout = 60
+        timeout = args.timeout
 
         auth = Auth()
         http_auth = auth(host=host,
-                     username=username,
-                     password=password,
-                     aws_region=aws_region,
-                     profile_name=None)
+                        username=username,
+                        password=password,
+                        aws_region=aws_region,
+                        profile_name=args.profile)
         es = Elasticsearch(
             host=host,
             port=port,
@@ -73,8 +72,7 @@ class ReturnIndex(object):
         return es
 
     def __init__(self):
-        #self.es = self.parse_args()
-        self.conf = os.getenv('ELASTALERT_CONFIG', 'config.yaml')
+        self.es = self.parse_args()
 
     def send_to_es(self, body, option):
         #if os.path.isfile(self.conf):
@@ -85,9 +83,9 @@ class ReturnIndex(object):
         #    filename = ''
 
         #es_client = elasticsearch_client(filename)
-        es_client = elasticsearch_client(self.conf)
+        #es_client = elasticsearch_client(self.conf)
 
-        #es_client = self.es
+        es_client = self.es
 
         doc = {
                     'message': body,
