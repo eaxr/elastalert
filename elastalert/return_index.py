@@ -24,7 +24,7 @@ import sys
 from .util import elasticsearch_client
 from .config import load_conf
 
-class ReturnIndex(object):
+class ReturnIndex(Alertrer):
     def parse_args(self):
         #if os.path.isfile('../config.yaml'):
         #    filename = '../config.yaml'
@@ -75,11 +75,18 @@ class ReturnIndex(object):
     def __init__(self, *args):
         #self.es = self.parse_args()
         super(ReturnIndex, self).__init__(*args)
-        self.conf = load_conf(args)
 
     def send_to_es(self, body, option):
         #es_client = self.es
-        es_client = elasticsearch_client(self.conf)
+
+        if os.path.isfile(self.args.config):
+            filename = self.args.config
+        elif os.path.isfile('../config.yaml'):
+            filename = '../config.yaml'
+        else:
+            filename = ''
+
+        es_client = elasticsearch_client(filename)
 
         doc = {
                     'message': body,
