@@ -23,7 +23,14 @@ from dateutil import tz
 import sys
 from .util import elasticsearch_client
 
-class ReturnIndex(object):
+from elastalert.elastalert import ElastAlerter
+from elastalert.util import EAException
+from elastalert.util import elasticsearch_client
+from elastalert.util import lookup_es_key
+from elastalert.util import ts_now
+from elastalert.util import ts_to_dt
+
+class ReturnIndex(ElastAlerter):
     def parse_args(self):
         #if os.path.isfile('../config.yaml'):
         #    filename = '../config.yaml'
@@ -71,9 +78,11 @@ class ReturnIndex(object):
 
         return es
 
-    def __init__(self, conf):
-        self.es = self.parse_args()
-        print(elastalert.args.config)
+    def __init__(self, *args):
+        #self.es = self.parse_args()
+        super(ReturnIndex, self).__init__(self, *args)
+        elastalert = ElastAlerter(args)
+        self.es = elastalert.es_clients
 
     def send_to_es(self, body, option):
         #if os.path.isfile(self.conf):
