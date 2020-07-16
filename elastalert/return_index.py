@@ -21,6 +21,8 @@ env = Env(ES_USE_SSL=bool)
 from datetime import datetime
 from dateutil import tz
 import sys
+from .util import elasticsearch_client
+from .config import load_conf
 
 class ReturnIndex(object):
     def parse_args(self):
@@ -70,11 +72,14 @@ class ReturnIndex(object):
 
         return es
 
-    def __init__(self):
-        self.es = self.parse_args()
+    def __init__(self, *args):
+        #self.es = self.parse_args()
+        super(ReturnIndex, self).__init__(*args)
+        self.conf = load_conf(args)
 
     def send_to_es(self, body, option):
-        es_client = self.es
+        #es_client = self.es
+        es_client = elasticsearch_client(self.conf)
 
         doc = {
                     'message': body,
