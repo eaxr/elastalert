@@ -1605,8 +1605,8 @@ class TelegramAlerter(Alerter):
     """ Send a Telegram message via bot api for each alert """
     required_options = frozenset(['telegram_bot_token', 'telegram_room_id'])
 
-    def __init__(self, rule, args):
-        super(TelegramAlerter, self).__init__(*args, rule)
+    def __init__(self, rule, *args):
+        super(TelegramAlerter, self).__init__(rule, *args)
         self.telegram_bot_token = self.rule['telegram_bot_token']
         self.telegram_room_id = self.rule['telegram_room_id']
         self.telegram_api_url = self.rule.get('telegram_api_url', 'api.telegram.org')
