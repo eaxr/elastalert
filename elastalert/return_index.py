@@ -71,19 +71,20 @@ class ReturnIndex(object):
 
         return es
 
-    #def __init__(self):
-        #self.es = self.parse_args()
+    def __init__(self, conf):
+        self.es = self.parse_args()
+        print(elastalert.args.config)
 
-    def send_to_es(self, body, conf, option):
-        if os.path.isfile(conf):
-            filename = conf
-        elif os.path.isfile('../config.yaml'):
-            filename = '../config.yaml'
-        else:
-            filename = ''
+    def send_to_es(self, body, option):
+        #if os.path.isfile(self.conf):
+        #    filename = self.conf
+        #elif os.path.isfile('../config.yaml'):
+        #    filename = '../config.yaml'
+        #else:
+        #    filename = ''
 
-        es_client = elasticsearch_client(filename)
-        #es_client = self.es
+        #es_client = elasticsearch_client(filename)
+        es_client = self.es
 
         doc = {
                     'message': body,
