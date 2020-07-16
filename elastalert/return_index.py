@@ -23,7 +23,7 @@ from dateutil import tz
 import sys
 from .util import elasticsearch_client
 
-class ReturnIndex(Alertrer):
+class ReturnIndex(object):
     def parse_args(self):
         #if os.path.isfile('../config.yaml'):
         #    filename = '../config.yaml'
@@ -71,15 +71,14 @@ class ReturnIndex(Alertrer):
 
         return es
 
-    def __init__(self, *args):
+    def __init__(self):
         #self.es = self.parse_args()
-        super(ReturnIndex, self).__init__(*args)
 
-    def send_to_es(self, body, option):
+    def send_to_es(self, body, conf, option):
         #es_client = self.es
 
-        if os.path.isfile(self.args.config):
-            filename = self.args.config
+        if os.path.isfile(conf):
+            filename = conf
         elif os.path.isfile('../config.yaml'):
             filename = '../config.yaml'
         else:

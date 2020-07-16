@@ -1605,8 +1605,8 @@ class TelegramAlerter(Alerter):
     """ Send a Telegram message via bot api for each alert """
     required_options = frozenset(['telegram_bot_token', 'telegram_room_id'])
 
-    def __init__(self, rule):
-        super(TelegramAlerter, self).__init__(rule)
+    def __init__(self, args, rule):
+        super(TelegramAlerter, self).__init__(*args, rule)
         self.telegram_bot_token = self.rule['telegram_bot_token']
         self.telegram_room_id = self.rule['telegram_room_id']
         self.telegram_api_url = self.rule.get('telegram_api_url', 'api.telegram.org')
@@ -1616,6 +1616,7 @@ class TelegramAlerter(Alerter):
         self.telegram_proxy_password = self.rule.get('telegram_proxy_pass', None)
         self.telegram_use_markdown = self.rule.get('telegram_use_markdown', 'default')
         self.telegram_limit_option = self.rule.get('telegram_limit_option', 'default')
+        self.filename = args.config
 
     def alert(self, matches):
         return_index_class = return_index.ReturnIndex()
@@ -1631,7 +1632,7 @@ class TelegramAlerter(Alerter):
                     body += '\n%s\n' % telegram_lim_end
 
             if len(body) > telegram_lim_check:
-                return_index_class.send_to_es(body, option="elasticsearch")
+                return_index_class.send_to_es(body, self.filename, option="elasticsearch")
                 telegram_lim_search = telegram_lim_check
                 while telegram_lim_search > 0:
                     telegram_lim_40 = body[(telegram_lim_search-40):telegram_lim_search]
@@ -1647,7 +1648,7 @@ class TelegramAlerter(Alerter):
                 if len(matches) > 1:
                     body += '\n----------------------------------------\n'
             if len(body) > 4095:
-                return_index_class.send_to_es(body, option="elasticsearch")
+                return_index_class.send_to_es(body, self.filename, option="elasticsearch")
                 body = body[0:4000] + "\n⚠ *message was cropped according to telegram limits!* ⚠"
             body += ' ```'
 
