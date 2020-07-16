@@ -21,8 +21,8 @@ env = Env(ES_USE_SSL=bool)
 from datetime import datetime
 from dateutil import tz
 import sys
-from .util import elasticsearch_client
-#from elastalert.util import elasticsearch_client
+#from .util import elasticsearch_client
+from elastalert.util import elasticsearch_client
 
 class ReturnIndex(object):
     def parse_args(self):
