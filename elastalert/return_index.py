@@ -22,7 +22,6 @@ from datetime import datetime
 from dateutil import tz
 import sys
 from .util import elasticsearch_client
-from .config import load_conf
 
 class ReturnIndex(Alertrer):
     def parse_args(self):
